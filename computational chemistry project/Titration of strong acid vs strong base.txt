@@ -1,0 +1,39 @@
+import numpy as np
+import matplotlib.pyplot as plt
+# parametters of acid and basse
+vol_base =float(input("enter the volume of strong base in ml :",))
+con_base=float(input("enter the concentration of strong base in N:", ))
+# as we kmow V(AcOH)*S(AcOH)=V(NaOH)*S(NaOH)
+con_acid=float(input("enter the concentration of strong acud in N:", ))
+#equivalent point is the volume of NaoH reqiured to neutralize all the stong acid
+# as we kmow V(AcOH)*S(AcOH)=V(NaOH)*S(NaOH)
+eqvalpoint=vol_base*con_base/con_acid # equivalent point in ml
+print("the equivalent point is",eqvalpoint)
+PH_int=14+np.log10(con_base)
+plt.plot(PH_int,'yo')
+#so then we are adding HCl in dropwise manner upto the penaltimate addition of HCl to equivalence
+# it is estimated that the volume of 1 drop aqeous solution from burrete is= 0.05 ml
+# in each step we ar adding 2 drops of HCL 0.1 ml
+# HCL volume is started from 0.1
+acid_added=np.arange(0.1,eqvalpoint,0.1)
+# To know the no of total moles of HCl at each step
+stepacidcon=(acid_added*con_acid)/(acid_added+vol_base)
+stepbasecon=((con_base*vol_base)-(acid_added*con_acid))/(acid_added+vol_base) # concentration of base at each step
+# as solution at bekar still rich on base so we need to calculate pOH and substract them from 14 to get the PH
+PH_befeqi=14+np.log10(stepbasecon) #PH_befeqi is the pH at each addition of acid
+plt.plot(acid_added,PH_befeqi)
+#now at the equival point
+# so we have alrady added equivalent point amount of HCl to NaOH
+#at equivalent point pH= 7
+PH_eqi=7
+plt.plot(eqvalpoint,PH_eqi,'go')
+#Now after the equivalpoint 
+# let say we are going to continue our experiment 2 times to the volume of expected equivalence point
+acid_addedaftereqi=np.arange((eqvalpoint+0.1),(2*eqvalpoint),0.1)
+#now the acid left after equivalent point is given by 
+finalcon_H3O=((acid_addedaftereqi*con_acid)-(vol_base*con_base))/(acid_addedaftereqi+vol_base)
+PH_aftereqi=-np.log10(finalcon_H3O)
+plt.plot(acid_addedaftereqi,PH_aftereqi)
+plt.title("SA vs SB SB is titrant")
+plt.ylabel("pH")
+plt.xlabel("acid added(ml)")

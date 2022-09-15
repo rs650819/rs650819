@@ -1,0 +1,77 @@
+# titration of weak base vs strong acid(Titrant/titrator)
+import numpy as np
+import matplotlib.pyplot as plt
+# parameters of acid and base
+vol_base = float(input("enter volume of base in ml ",)) # volume of NH4OH in ml
+con_base =float(input("enter concentration of base N ",)) #N # the conc. of NH4OH
+con_acid =float(input("enter concentration of acid N ",)) #N # the conc. of HCl
+# the equivalent point is volume of HCl required to neutralize all the NH4OH
+# as we know that V(HCl)*S(HCl) = V(NH4OH)*S(NH4OH)
+eqvalpoint = vol_base*con_base/con_acid # equivalent point in ml
+print("Equivalent point is at ",eqvalpoint,"ml")
+# before addition of HCl
+# for initial pH
+# we should consruct a ICE table
+'''        NH3 + H2O = NH4+ + OH- where b is initial conc. of NH4OH
+initial:    b           0     0
+change:     -x          x     x
+equilibrium: b-x        x     x '''
+# the dissociation constant Kb = [NH4+]*[0H-]/[NH3]
+# Kb = (x**2)/(b-x)
+# x**2 + Kb*x - Kb*b = 0 forms a quadratic equation
+# solution of the equation
+Kb = 1.8e-5 # the dissociation constant of NH4OH
+def eqn(a,b,c):
+  sol1 = (-b+np.sqrt((b**2)-(4*a*c)))/(2*a)
+  sol2 = (-b-np.sqrt((b**2)-(4*a*c)))/(2*a)
+  return [sol1,sol2]
+solution = eqn(1,Kb,(-Kb*con_base))
+# solution[0] is such that has physical significance
+# the initial value of [0H-] = intconOH
+intconOH = solution[0]
+# pH = -log[H3O+]
+POH_int = -np.log10(intconOH) # when no HCl is added there
+PH_int = 14-POH_int # pH = 14-pOH
+print("The initial pH is ",PH_int)
+# now as we know a expected equivalence point
+# and we also know our initial pH
+''' so then we are adding HCl in dropwise manner upto the penaltimate addition of HCl to 
+base solution. The reason behind this is when we start addition of HCl dropwise manner.
+There is both NH3 and NH4+ in the solution that will form a buffer now pH of buffer can be given
+by Henderson equation but at equivalent point there is no NH4OH'''
+#it is estimated that the volume of 1 drop aq. solution from burette is 0.05 ml
+# in each step we are adding 2 drops of HCl then volume is 0.1 ml
+# HCl volume is started from 0.1 ml
+acid_added = np.arange(0.1,eqvalpoint,0.1)
+# To knowthe no of total moles of HCl at each step
+stepacidcon = (acid_added*con_acid)/(acid_added+vol_base)
+# stepacidcon is actually [NH4+] formed after each addition of HCl as before equivalent point
+stepbasecon = ((con_base*vol_base)-(acid_added*con_acid))/(acid_added+vol_base)
+# stepbasecon is the [NH4OH] after each addition of HCl
+# we are going to use the Henderson equation from 1st two drops addition of HCl to the base solution
+# here it will form a buffer
+# like B + H2O = BH+ + OH-
+# Henderson equation: pH = pKa + log([BH+]/[B])
+# [BH+] = stepacidcon and [B] = stepbasecon
+PKb = -np.log10(Kb)
+POH= PKb + (np.log10(stepacidcon/stepbasecon))
+PH = 14 -POH
+# plotting upto Equivalent point
+plt.plot(acid_added,PH)
+# now at the equivalent point
+# so we are already added Equivalent point amount of HCl to NH4OH solution
+# at the equivalent point [H3O+] = [OH-]
+# at the equivalent point of HCl and NH4OH
+Kw= 1e-14
+Kb = 1.8e-5
+PKw = -np.log10(Kw)
+PKb = -np.log10(Kb)
+PH_eqi = 0.5*PKw -0.5*PKb -0.5*np.log10(con_base)
+plt.plot(eqvalpoint,PH_eqi,"yo")
+acid_addedaftereqi = np.arange((eqvalpoint+0.1),(2*eqvalpoint),0.1)
+finalcon_H3O = ((acid_addedaftereqi*con_acid)-(vol_base*con_base))/(acid_addedaftereqi+vol_base)
+PH_aftereqi = -np.log10(finalcon_H3O)
+plt.plot(acid_addedaftereqi, PH_aftereqi)
+plt.title("The Titration curve of HCl vs NH4OH")
+plt.xlabel("Volume added of HCl in ml")
+plt.ylabel("pH of solution")

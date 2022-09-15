@@ -1,0 +1,93 @@
+# titration curve of  NaOH  vs  CH3COOH 
+import numpy as np
+import matplotlib.pyplot as plt
+# parametters of acid and basse
+vol_acid =float(input("enter volume of acid ml ",)) # volume of the AcOH in ml
+con_acid= float(input("enter conctration of acid N ",)) # conctration of the AcOH in N
+# as we kmow V(AcOH)*S(AcOH)=V(NaOH)*S(NaOH)
+con_base= float(input("enter concentration of base N ",))# N # Conc of NaOH
+#equivalent point is the volume of NaoH reqiured to neutralize all the AcOH
+# as we kmow V(AcOH)*S(AcOH)=V(NaOH)*S(NaOH)
+eqvalpoint=vol_acid*con_acid/con_base # equivalent point in ml
+print("eqvalpoint ",eqvalpoint,"ml")
+#before additiobn of NaOH
+#for initial PH
+# we sholud construcy a ICE table
+'''    CH3COOH + H2O = CH3COO- + H3O+ where a is initial conctration of acid
+initial :   a            0            0
+change   :   -x             x        x
+equllibrium: a-x          x            x'''
+# the dissociation constant of weak acid Ka=[CH3COO-]*[H3O+]/[CH3COOH]
+#Ka=(x**2)/(a-x)
+# x**2 + Ka*x - Ka*a = 0 forms a quadretic equation
+# solution of this equaton
+Ka=1.8e-5 # dissotiation constant of AcOH
+def eqn(a,b,c):
+  sol1=(-b+np.sqrt((b**2)-(4*a*c)))/(2*a)
+  sol2=(-b-np.sqrt((b**2)-(4*a*c)))/(2*a)
+  return [sol1,sol2]
+solution=eqn(1,Ka,(-Ka*con_acid))
+# solution[0] is such that has physical significance
+# the initial value of [H3O+]=intconH30
+intconH30 = solution[0] 
+# PH= -log([H3O+])
+PH_int=-np.log10(intconH30) # PH when no NaOH is added there
+print("the initial ph is",PH_int)
+plt.plot(PH_int,'ro')
+# now as we know a expected  equivalence point
+#and we also know our intial PH
+'''so then we are adding NaOH in dropwise manner upto the penaltimate addition of NaOH to equivalence
+the reason behind this  is when we start addition of NaOH dropwise manner
+there is both AcOH and AcO- in the solution that will form a buffer now
+the PH of a buffer can be given by Hendersonequation but at equvalence theree is no AcOH left 
+and later we will use salt hydrolysis of AcO- to find the PH at equivalence point ''' 
+# it is estimated that the volume of 1 drop aqeous solution from burrete is= 0.05 ml
+# in each step we ar adding 2 drops of NaOH 0.1 ml
+# NaOH volume is started from 0.1 
+base_added=np.arange(0.1,eqvalpoint,0.1)
+# To know the no of total moles of NaOH at each step
+stepbasecon=(base_added*con_base)/(base_added+vol_acid)  # [AcO-]=[NaOH]
+#stepbasecon is actually the [AcO-] fromed after each addition of NaOH as before equivalence point [OH-]=[AcO-] 
+stepacidcon=((con_acid*vol_acid)-(base_added*con_base))/(base_added+vol_acid) ##?
+# stepacidcon is the [AcOH] left after each additon of NaOH
+# we are going to use the henderson equation from the 1st two drop addition of NaOH to the penaltimate addition of NaOH
+# here it wii form a buffer 
+# like HA + H2o = A- + H3O+
+#Henderson equation : PH = Pka + log([AcO-]/[AcOH])
+#[HA]= stepacidcon and [A-]=stepbasecon
+Ka=1.76e-5 # dissotiation constant ofAcOH
+Pka=-np.log10(Ka)
+PH=Pka+(np.log10(stepbasecon/stepacidcon))
+# plotting upto equivalence point
+plt.plot(base_added,PH)
+#now at the equi valence point 
+# so we have alrady added equivalent point amount of NaOH to AcOH
+# at eqiuivalence point [H3O+]=[OH-]
+# now AcO- will undergo salt hydrolysis we need to consider that to find the PH at equivalance point 
+con_Aco=(eqvalpoint*con_base)/(vol_acid+eqvalpoint)
+Kw=1e-14
+Kb=Kw/Ka
+# AcO- acts as a base
+#Now we need to construct a ICE table to show the salt hydrolysis of AcO-
+#                AcO-    +   H2O   = AcOH + OH-    
+#initial         b          _       0      0
+#change         -x          _       x      x
+#equilibrium   b-x          _       x      x where b is conc of AcO- after netralization
+# Kb=x**2/b-x
+# x**2+Kb*x-Kb*b=0
+solution_2=eqn(1,Kb,(-Kb*con_Aco))
+con_OH = solution_2[0]
+POH=-np.log10(con_OH) # as AcO- acts as a base
+PH_eqi=14-POH
+print("The PH at the equivalance point",PH_eqi)
+plt.plot(eqvalpoint,PH_eqi,"yo") # showing the equivalance point
+# now when we go on addeing 2 drops of NaOH after the equivalnce point also
+# let say we are going to continue our experiment 2 times to the volume of expected equivalence point
+base_addedaftereqi=np.arange((eqvalpoint+0.1),(2*eqvalpoint),0.1)
+finalcon_OH=((base_addedaftereqi*con_base)-(vol_acid*con_acid))/(base_addedaftereqi+vol_acid)
+POH_aftereqi=-np.log10(finalcon_OH)
+PH_aftereqi=14-POH_aftereqi
+plt.plot(base_addedaftereqi,PH_aftereqi)
+plt.title("The Titration curve of AcOH vs NaOH")
+plt.xlabel("volume added of NaOH (ml)")
+plt.ylabel("pH of solution")

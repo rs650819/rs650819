@@ -1,0 +1,91 @@
+
+# NH4OH is weak base and CH3COOH is weak acid
+import numpy as np
+import matplotlib.pyplot as plt
+# parameters of acid and base
+vol_acid =float(input("enter volume of acid ml ",))  # Volume of AcOH in ml
+con_acid =float(input("enter concentration of acid N ",)) #N # the conc. of CH3COOH
+con_base = float(input("enter concentration of base N ",)) # N # the conc. of NH4OH
+# Equivalent point is the volume of NH4OH required to neutralize all the AcOH
+# as we know that V(AcOH)*S(AcOH) = V(NH4OH)*S(NH4OH)
+eqvalpoint = mol_acid = vol_acid*con_acid/con_base # equivalent point in ml
+print("Equivalent point is at ",eqvalpoint,"ml")
+# before addition of NH40H
+# for initial pH
+# We should construct a ICE table
+'''      CH3COOH + H2O = CH3COO- + H3O+ where a is initial concentration of CH3COOH
+initial:   a               0        0
+change:     -x             x        x
+equilibrium: a-x           x        x '''
+# the dissociation constant of CH3COOH Ka = [CH3COO-]*[H3O+]/[CH3COOH]
+# Ka = (x**2)/(a-x)
+# x**2 + Ka*x -Ka*a = 0 forms a quadratic equation
+# solution of this equation
+Ka = 1.8e-5 # dissociation constant of AcOH
+def eqn(a,b,c):
+  sol1 = (-b+np.sqrt((b**2)-(4*a*c)))/(2*a)
+  sol2 = (-b-np.sqrt((b**2)-(4*a*c)))/(2*a)
+  return [sol1, sol2]
+solution = eqn(1, Ka,(-Ka*con_acid))
+# solution[0] is such that has physical significance
+# the initial value of [H30+] = intconH3O
+intconH3O = solution[0]
+# pH = - log([H3O+])
+PH_int = -np.log10(intconH3O) # pH when no NH4OH is added there
+print(" The initial pH is ",PH_int)
+# now as we know a expected equivalence point though no sharp change around the Equivalence point
+# and we also know our initial pH
+''' so then we are adding NH4OH in dropwise manner uoto the penaltimate addition of NH4OH to acid solution
+The reason behind this is when we start addition of NH4OH dropwise manner.There is both AcOH and AcO-
+in the solution that will form a buffer now the pH of a buffer can be given by
+Henderson equation but at the equivalent point there is no AcOH and later we will
+use salt hydrolysis of AcO- to find the pH at the equivalent point.During the progress
+of neutralization before the equivalent point,the pH of the solution changes more or less 
+in the same fashion as in the titration of AcOH and NH4OH.'''
+# It is estimated that the volume of 1 drop aqueous solution from burrette is 0.05 ml
+# in each step we are addding 2 drops of NH4OH then volume is 0.1 ml
+# NH4OH volume is started from 0.1 ml
+base_added = np.arange(0.1,eqvalpoint,0.1)
+# To know the no of total moles of NH4OH at each step
+stepbasecon = (base_added*con_base)/(base_added+vol_acid)
+# stepbasecon is actually the [AcO-] formed after each addition of NH4OH as before equivalent point
+stepacidcon = ((con_acid*vol_acid)-(base_added*con_base))/(base_added+vol_acid)
+# stepacidcon is the [AcOH] after each addition of NH4OH
+# We are going to use the henderson equation from the 1st two drop addition of NH4OH to the acid solution
+# here it will form a buffer
+# like HA + H2O = A- + H3O+
+# Henderson equation : pH = pKa + log([A-]/[HA])
+# [HA] = stepacidcon and [A-] = stepbasecon
+Ka = 1.8e-5 # dissociation constant of AcOH
+PKa = -np.log10(Ka)
+PH = PKa + (np.log10(stepbasecon/stepacidcon))
+# plotting upto Equivalence point
+plt.plot(base_added,PH)
+# Now the at the Equivalent point
+# So we are already added Equivalent point amount of NH4OH to AcOH solution
+# at the equivalence point [H3O+] = [OH-]
+# At the equivalence point of NH4OH and AcOH
+# pH = 1/2.pKw + 1/2.pKa - 1/2.pKb
+Kw = 1e-14 # Kw = [H3O+].[OH-],Kw is ionic product constant of water
+Kb = 1.8e-5 # dissociation constant of NH4OH
+PKw = -np.log10(Kw)
+PKb = -np.log10(Kb)
+PH_eqi = 0.5*PKw + 0.5*PKa - 0.5*PKb
+print("The pH at Equivalence point is ",PH_eqi)
+plt.plot(eqvalpoint,PH_eqi,"yo") # showing the equivalent point
+# now when we go on adding 2 drops of NH4OH after equivalent point also
+''' beyond the equivalent, addition of excess alkali to the ammonium acetate solution changes the pH
+of the medium according to Henderson realation'''
+# here it will form also a buffer
+# like B + H2O = BH+ + OH-
+#  Henderson relation: pOH = pKb + log([BH+]/[B])
+base_addedaftereqi = np.arange((eqvalpoint+0.1),(2*eqvalpoint),0.1)
+con_salt = (vol_acid*con_acid)/(base_addedaftereqi+vol_acid)
+finalcon_base = ((base_addedaftereqi*con_base)-(vol_acid*con_acid))/(base_addedaftereqi+vol_acid)
+# B = finalcon_base and BH+ = con_salt
+POH_aftereqi = PKb + (np.log10(con_salt/finalcon_base))
+PH_aftereqi = 14 - POH_aftereqi
+plt.plot(base_addedaftereqi,PH_aftereqi)
+plt.title("The Titration curve of CH3COOH vs NH4OH")
+plt.xlabel("Volume added of NH4OH in ml")
+plt.ylabel("pH of the solution")
